@@ -1,0 +1,127 @@
+[gd_scene load_steps=13 format=3 uid="uid://bbmhb2mfhhmo8"]
+
+[ext_resource type="Texture2D" uid="uid://dggyogx4stjrw" path="res://assets/character/1 - Dr. Science/Idle (16 x 16).png" id="2_1fo2x"]
+[ext_resource type="Texture2D" uid="uid://b28jwrkjfc4uc" path="res://assets/character/1 - Dr. Science/Blink (16 x 16).png" id="3_jft68"]
+[ext_resource type="Texture2D" uid="uid://b3a3gpgawxbpu" path="res://assets/character/1 - Dr. Science/Jump (16 x 16).png" id="4_5amry"]
+[ext_resource type="Texture2D" uid="uid://bcv3pede2wfoh" path="res://assets/character/1 - Dr. Science/Run (16 x 16).png" id="5_b6sy1"]
+
+[sub_resource type="GDScript" id="GDScript_lsqbn"]
+script/source = "extends CharacterBody2D
+
+const SPEED = 400.0
+const JUMP_VELOCITY = -550.0
+const DEATH_HEIGHT = 1400.0
+
+@onready var sprite: AnimatedSprite2D = $Sprite
+var direction = Vector2.ZERO
+
+func _physics_process(delta):
+	# Aplica gravidade
+	if not is_on_floor():
+		velocity.y += get_gravity().y * delta
+	else:
+		if velocity.x == 0: 
+			sprite.play(\"idle\")
+			
+	if global_position.y > DEATH_HEIGHT:
+		die()
+	
+	# Controles de pulo e movimento
+	if Input.is_key_pressed(KEY_SPACE) and is_on_floor():
+		velocity.y = JUMP_VELOCITY
+		sprite.play(\"jump\")    
+			
+	if Input.is_key_pressed(KEY_D):
+		direction.x = 1 
+		sprite.flip_h = false
+		
+	elif Input.is_key_pressed(KEY_A): 
+		direction.x = -1
+		sprite.flip_h = true
+	
+	else:
+		direction.x = 0
+	
+	velocity.x = direction.x * SPEED
+	
+	if is_on_floor() and direction.x != 0:
+		sprite.play(\"run\")
+
+	move_and_slide()
+
+func die():
+	get_tree().reload_current_scene()
+"
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ws782"]
+size = Vector2(27, 40)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0sm0w"]
+atlas = ExtResource("2_1fo2x")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_g0bbo"]
+atlas = ExtResource("3_jft68")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_j77er"]
+atlas = ExtResource("4_5amry")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_p83wy"]
+atlas = ExtResource("5_b6sy1")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_g4jq6"]
+atlas = ExtResource("5_b6sy1")
+region = Rect2(16, 0, 16, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_yj7se"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0sm0w")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_g0bbo")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 2.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_j77er")
+}],
+"loop": true,
+"name": &"jump",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_p83wy")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_g4jq6")
+}],
+"loop": true,
+"name": &"run",
+"speed": 5.0
+}]
+
+[node name="Player" type="CharacterBody2D"]
+script = SubResource("GDScript_lsqbn")
+
+[node name="Collision" type="CollisionShape2D" parent="."]
+position = Vector2(-11.5, -14)
+shape = SubResource("RectangleShape2D_ws782")
+
+[node name="Sprite" type="AnimatedSprite2D" parent="."]
+texture_filter = 1
+position = Vector2(-12.25, -12.75)
+scale = Vector2(2.59375, 2.78125)
+sprite_frames = SubResource("SpriteFrames_yj7se")
+animation = &"jump"
+
+[node name="Camera" type="Camera2D" parent="."]
+position = Vector2(-15, -90)
